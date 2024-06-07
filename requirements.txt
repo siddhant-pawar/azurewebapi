@@ -1,0 +1,9 @@
+azure-functions
+transformers
+openai
+Flask
+PyMuPDF
+PyMuPDFb
+torch
+torchaudio
+torchvision
