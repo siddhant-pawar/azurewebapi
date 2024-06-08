@@ -47,7 +47,7 @@ def create_jsonl_content(original_paragraphs, summarized_paragraphs, system_role
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('templates/index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload():
