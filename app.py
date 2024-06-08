@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify, render_template
 from openai import OpenAI, OpenAIError
 
 app = Flask(__name__)
-client = OpenAI(api_key="sk-p--------------------------------")
+client = OpenAI(api_key="sk-proj-EFqvn4ZKJDizx--------------------------------")
 # Load the summarization pipeline using t5-small
 summarizer = pipeline("summarization", model="t5-small")
 
@@ -32,20 +32,18 @@ def summarize_paragraphs(paragraphs, max_length=150, min_length=30):
         summaries.append(summary[0]['summary_text'])
     return summaries
 
-
 def create_jsonl_content(original_paragraphs, summarized_paragraphs, system_role):
     jsonl_content = ""
     for original, summary in zip(original_paragraphs, summarized_paragraphs):
         json_line = {
             "messages": [
-                {"role": "system", "content": "You are a coding assistant and responsible for clearing user's coding problems in a curated manner by asking follow up questions and also take note of users interests and field of work"},
+                {"role": "system", "content": system_role},
                 {"role": "user", "content": original},
                 {"role": "assistant", "content": summary}
             ]
         }
         jsonl_content += json.dumps(json_line) + '\n'
     return jsonl_content
-
 
 @app.route('/')
 def index():
@@ -63,10 +61,14 @@ def upload():
     print(f"File received: {file.filename}")
 
     model_type = request.form.get('model_type')
+    system_role = request.form.get('system_role')
     if not model_type:
         return jsonify({"error": "Model type not provided"}), 400
+    if not system_role:
+        return jsonify({"error": "System role not provided"}), 400
 
     print(f"Model type selected by the user: {model_type}")
+    print(f"System role provided by the user: {system_role}")
 
     try:
         # Save the uploaded file to a temporary location
@@ -81,7 +83,6 @@ def upload():
         summaries = summarize_paragraphs(paragraphs)
 
         # Create JSONL content
-        system_role = 'You are a software engineering bot that assists users with determining the best model for their development.'
         jsonl_content = create_jsonl_content(paragraphs, summaries, system_role)
 
         # Upload the JSONL content to OpenAI
@@ -95,6 +96,16 @@ def upload():
             model=model_type,
             training_file=response.id,
         )
+
+        # Check the fine-tuning job status
+        while True:
+            job_status = client.fine_tuning.jobs.retrieve(fine_tuning_job.id)
+            if job_status.status == "succeeded":
+                print(f"Fine-tuning completed! Model ID: {job_status.fine_tuned_model}")
+                break
+            elif job_status.status == "failed":
+                print("Fine-tuning failed. Check logs for details.")
+                break
 
         # Delete the temporary file after processing
         if temp_file_path:
@@ -111,4 +122,4 @@ def upload():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
