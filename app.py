@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify, render_template
 from openai import OpenAI, OpenAIError
 
 app = Flask(__name__)
-client = OpenAI(api_key="sk-proj-Sn5Gp1wp9btyY869Gl8KT3BlbkFJstv4JlAGHDCSvdJNKgqH")
+client = OpenAI(api_key="sk-proj-your-api-key")
 # Load the summarization pipeline using t5-small
 summarizer = pipeline("summarization", model="t5-small")
 
