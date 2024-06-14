@@ -78,6 +78,32 @@ jobs:
         package: './azureflaskapp.zip'
 
   ```
+### Configure GitHub Secrets:
+
+- In your GitHub repository, go to Settings > Secrets and variables > Actions > New repository secret.
+- Add a new secret named AZURE_WEBAPP_PUBLISH_PROFILE.
+- To get the value of AZURE_WEBAPP_PUBLISH_PROFILE, follow these steps:
+  - Go to the Azure portal.
+  - Navigate to your Web App.
+  - Go to Deployment Center > Settings > Publishing Profile.
+  - Download the publishing profile.
+  - Open the downloaded file in a text editor and copy its contents.
+  - Paste the copied content as the value for the AZURE_WEBAPP_PUBLISH_PROFILE secret in GitHub.
+### Verify the Deployment
+
+- Push Changes to GitHub:
+
+1. Make sure your changes are committed and pushed to the ```main``` branch.
+2. This will trigger the GitHub Actions workflow defined in the ```.github/workflows/azure-webapp.yml``` file.
+- Monitor the GitHub Actions:
+
+1. Go to the Actions tab in your GitHub repository.
+2. You should see the workflow running.
+3. Wait for the workflow to complete. Ensure all steps are successful.
+
+- Access Your Web App:
+* Once the deployment is successful, you can access your web app at ```https://<your-app-name>.azurewebsites.net```.
+
 ### Imports and Initialization
 
 ```python
