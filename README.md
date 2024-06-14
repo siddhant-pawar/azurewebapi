@@ -1,5 +1,83 @@
 # Azure WEB API:
 This code is a Flask web application that allows users to upload a PDF file. The application extracts text from the PDF, summarizes the text using a pre-trained model (t5-small), creates a JSONL file suitable for fine-tuning a model on OpenAI's platform, and initiates a fine-tuning job.
+
+## Flask application on Azure Web App Service using CI/CD from GitHub :
+Create an Azure Web App
+- Log in to Azure:
+
+```sh
+az login
+```
+- Create a Resource Group:
+
+```sh
+az group create --name <resource-group-name> --location <location>
+#-----------------------------------------------------------------------------------------------------------
+az group create --name myResourceGroup --location eastus
+```
+- Create an App Service Plan:
+```sh
+az appservice plan create --name <app-service-plan-name> --resource-group <resource-group-name> --sku <sku>
+#-----------------------------------------------------------------------------------------------------------
+az appservice plan create --name myAppServicePlan --resource-group myResourceGroup --sku FREE
+
+```
+- Create a Web App:
+```sh
+az webapp create --resource-group <resource-group-name> --plan <app-service-plan-name> --name <app-service-name> --runtime <runtime>
+#-----------------------------------------------------------------------------------------------------------
+az webapp create --resource-group myResourceGroup --plan myAppServicePlan --name azureflaskapp --runtime "PYTHON:3.12"
+
+```
+- Verify the app service is running
+```sh
+az webapp show --name <app-service-name> --resource-group <resource-group-name>
+#-----------------------------------------------------------------------------------------------------------
+az webapp show --name azureflaskapp --resource-group myResourceGroup
+
+```
+## Configure GitHub Actions for CI/CD
+- Navigate to your GitHub repository.
+- Create a new file in the repository named ```.github/workflows/azure-webapp.yml```.
+- Add the following YAML configuration to ```.github/workflows/azure-webapp.yml```:
+```yaml
+name: Azure Web App CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Archive project files
+      run: zip -r azureflaskapp.zip .
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'azureflaskapp'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: './azureflaskapp.zip'
+
+  ```
 ### Imports and Initialization
 
 ```python
